@@ -16,5 +16,6 @@
   "wallpaper_rotation_minutes": 1,
   "wallpaper_order": "sequential",
   "wallpaper_dim": 10,
-  "wallpaper_true_color": true
+  "wallpaper_true_color": true,
+  "stock_home_redirect": "com.google.android.apps.tv.launcherx"
 }

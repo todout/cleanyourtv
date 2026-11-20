@@ -55,17 +55,24 @@ curl -fL "$CONFIG_URL" -o "$TMP_CFG"
 adb -s "$TARGET" shell "mkdir -p /sdcard/Android/data/com.gathin.tvhome/files"
 adb -s "$TARGET" push "$TMP_CFG" "/sdcard/Android/data/com.gathin.tvhome/files/config.json"
 
-echo "==> Configurando CleanYourTV como Inicio y deshabilitando launchers anteriores ..."
-adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.apps.tv.launcherx" || true
-adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
-adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tungsten.setupwraith" || true
+echo "==> Configurando CleanYourTV como Inicio ..."
 adb -s "$TARGET" shell "pm disable-user --user 0 com.spocky.projengmenu" || true
+adb -s "$TARGET" shell "pm grant com.gathin.tvhome android.permission.WRITE_SECURE_SETTINGS" || true
 adb -s "$TARGET" shell "cmd package set-home-activity com.gathin.tvhome/.MainActivity" || true
 adb -s "$TARGET" shell "cmd role add-role-holder android.app.role.HOME com.gathin.tvhome" || true
 
-echo "==> Iniciando CleanYourTV ..."
-adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
-adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
+if adb -s "$TARGET" shell "pm path com.google.android.apps.tv.launcherx" | grep -q "package:"; then
+    # Google TV (Onn TV): mantener launcherx habilitado para que funcione Google Assistant (micrófono)
+    adb -s "$TARGET" shell "pm enable com.google.android.apps.tv.launcherx" || true
+    adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
+    adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
+    adb -s "$TARGET" shell "settings put secure enabled_accessibility_services '' && settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
+else
+    # Android TV (ej. Mi Box S): deshabilitar tvlauncher
+    adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
+    adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
+    adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
+fi
 
 rm -f "$TMP_APK" "$TMP_CFG"
 echo ""

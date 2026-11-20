@@ -22,13 +22,21 @@ if (Test-Path $CfgPath) {
     & $AdbPath -s $Target push $CfgPath "/sdcard/Android/data/com.gathin.tvhome/files/config.json"
 }
 
-& $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
-& $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tvlauncher
-& $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tungsten.setupwraith
 & $AdbPath -s $Target shell pm disable-user --user 0 com.spocky.projengmenu
+& $AdbPath -s $Target shell pm grant com.gathin.tvhome android.permission.WRITE_SECURE_SETTINGS
 & $AdbPath -s $Target shell cmd package set-home-activity com.gathin.tvhome/.MainActivity
 & $AdbPath -s $Target shell cmd role add-role-holder android.app.role.HOME com.gathin.tvhome
-& $AdbPath -s $Target shell am force-stop com.gathin.tvhome
-& $AdbPath -s $Target shell am start -n com.gathin.tvhome/.MainActivity
+
+$hasLauncherX = & $AdbPath -s $Target shell pm path com.google.android.apps.tv.launcherx
+if ($hasLauncherX -match "package:") {
+    & $AdbPath -s $Target shell pm enable com.google.android.apps.tv.launcherx
+    & $AdbPath -s $Target shell am force-stop com.gathin.tvhome
+    & $AdbPath -s $Target shell am start -n com.gathin.tvhome/.MainActivity
+    & $AdbPath -s $Target shell "settings put secure enabled_accessibility_services '' && settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1"
+} else {
+    & $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tvlauncher
+    & $AdbPath -s $Target shell am force-stop com.gathin.tvhome
+    & $AdbPath -s $Target shell am start -n com.gathin.tvhome/.MainActivity
+}
 
 Write-Host "CleanYourTV instalado y configurado como Inicio en $Target" -ForegroundColor Green
