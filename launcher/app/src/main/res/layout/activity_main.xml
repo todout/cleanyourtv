@@ -391,6 +391,8 @@
                 android:paddingEnd="10dp"
                 android:clipToPadding="false"
                 android:clipChildren="false"
+                android:requiresFadingEdge="vertical"
+                android:fadingEdgeLength="28dp"
                 android:overScrollMode="never"
                 android:scrollbars="none"
                 android:descendantFocusability="afterDescendants" />
