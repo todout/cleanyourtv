@@ -7,6 +7,18 @@ Fork personalizado de [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyo
 
 ---
 
+## Instalación rápida desde el celular Android (Termux)
+
+Con **Termux** (`pkg install android-tools curl`) en la misma red Wi-Fi que el Onn TV:
+
+```bash
+curl -sL https://raw.githubusercontent.com/todout/cleanyourtv/main/instalar_termux.sh | bash -s -- 192.168.0.XXX
+```
+
+El script descarga el último APK de Releases, lo instala, verifica que `com.gathin.tvhome` esté instalado, deshabilita el launcher oficial y `setupwraith` (para evitar la pantalla negra), fija CleanYourTV como Inicio y lo abre automáticamente.
+
+---
+
 ## Instalación rápida en otro Onn TV (con PC / Notebook en el mismo Wi-Fi)
 
 1. En el **Onn TV**, activá **Opciones para desarrolladores > Depuración USB / Depuración inalámbrica** (o ADB por red en el puerto `5555`).
