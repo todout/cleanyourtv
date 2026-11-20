@@ -7,8 +7,13 @@
 set -e
 
 APK_URL="https://github.com/todout/cleanyourtv/releases/latest/download/CleanYourTV-OnnTV.apk"
+CONFIG_URL="https://raw.githubusercontent.com/todout/cleanyourtv/main/config.json"
 TMP_APK="/tmp/CleanYourTV-OnnTV.apk"
-[ -d "$HOME" ] && TMP_APK="$HOME/CleanYourTV-OnnTV.apk"
+TMP_CFG="/tmp/cleanyourtv-config.json"
+if [ -d "$HOME" ]; then
+    TMP_APK="$HOME/CleanYourTV-OnnTV.apk"
+    TMP_CFG="$HOME/cleanyourtv-config.json"
+fi
 
 if ! command -v adb >/dev/null 2>&1; then
     echo "[ERROR] adb no está instalado. En Termux ejecutá: pkg install android-tools curl"
@@ -45,6 +50,11 @@ if ! adb -s "$TARGET" shell "pm path com.gathin.tvhome" | grep -q "package:"; th
     exit 1
 fi
 
+echo "==> Aplicando configuración visual (config.json) ..."
+curl -fL "$CONFIG_URL" -o "$TMP_CFG"
+adb -s "$TARGET" shell "mkdir -p /sdcard/Android/data/com.gathin.tvhome/files"
+adb -s "$TARGET" push "$TMP_CFG" "/sdcard/Android/data/com.gathin.tvhome/files/config.json"
+
 echo "==> Configurando CleanYourTV como Inicio y deshabilitando launcher oficial + setupwraith ..."
 adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.apps.tv.launcherx" || true
 adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tungsten.setupwraith" || true
@@ -54,6 +64,6 @@ adb -s "$TARGET" shell "cmd role add-role-holder android.app.role.HOME com.gathi
 echo "==> Iniciando CleanYourTV ..."
 adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
 
-rm -f "$TMP_APK"
+rm -f "$TMP_APK" "$TMP_CFG"
 echo ""
 echo "✓ Listo. CleanYourTV quedó instalado y configurado como Inicio en $TARGET."

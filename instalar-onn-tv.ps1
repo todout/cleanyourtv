@@ -16,6 +16,12 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $AdbPath -s $Target install -r $ApkPath
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+$CfgPath = "$PSScriptRoot\config.json"
+if (Test-Path $CfgPath) {
+    & $AdbPath -s $Target shell "mkdir -p /sdcard/Android/data/com.gathin.tvhome/files"
+    & $AdbPath -s $Target push $CfgPath "/sdcard/Android/data/com.gathin.tvhome/files/config.json"
+}
+
 & $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
 & $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tungsten.setupwraith
 & $AdbPath -s $Target shell cmd package set-home-activity com.gathin.tvhome/.MainActivity

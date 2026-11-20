@@ -1,0 +1,20 @@
+{
+  "columns": 6,
+  "rows_below_dock": 0,
+  "dock_title": false,
+  "dock_glass": true,
+  "dock_opacity": 70,
+  "show_greeting": false,
+  "date_below_clock": true,
+  "icon_only_buttons": true,
+  "vpn_pill": true,
+  "icon_only_vpn": true,
+  "vpn_app": "com.tailscale.ipn",
+  "reorder_button": false,
+  "ambient_glow": false,
+  "wallpaper": true,
+  "wallpaper_rotation_minutes": 1,
+  "wallpaper_order": "sequential",
+  "wallpaper_dim": 10,
+  "wallpaper_true_color": true
+}
