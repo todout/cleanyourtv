@@ -1091,6 +1091,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        WeatherHelper.refreshIfNeeded(this);
+        RemoteWallpapers.syncIfNeeded(this);
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
@@ -2509,11 +2511,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.topMargin = Math.round(4 * density);
-        if (getResources().getBoolean(R.bool.rtl_menu_bar)) {
-            // Date and clock flush right; the greeting stays left and follows the clock by translation.
-            lp.gravity = Gravity.RIGHT;
-            ((LinearLayout.LayoutParams) clockRow.getLayoutParams()).gravity = Gravity.RIGHT;
-        }
+        lp.gravity = Gravity.RIGHT;
+        ((LinearLayout.LayoutParams) clockRow.getLayoutParams()).gravity = Gravity.RIGHT;
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
         // The column now wraps its texts, so they must wrap too: a match_parent TextView does not ask for a new
         // layout when its text gets longer, and the column kept the width of the day before ("TUESDAY 27 OCTOB…").
@@ -2541,29 +2540,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             column.setLayoutParams(lp);
         }
         LinearLayout buttons = findViewById(R.id.topButtons);
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) buttons.getLayoutParams();
-        lp.addRule(RelativeLayout.ALIGN_TOP, R.id.leftBlock);
-        lp.bottomMargin = 0;
-        buttons.setLayoutParams(lp);
         buttons.setGravity(Gravity.CENTER_VERTICAL);
     }
 
-    /** With the date below, keep the icons beside the clock rather than beside the last date line. */
+    /** Kept as no-op when clock is below topButtons on the right. */
     private void alignDateBelowIconsWithClock() {
-        View clock = findViewById(R.id.clock);
-        View clockRow = (View) clock.getParent();
-        LinearLayout buttons = findViewById(R.id.topButtons);
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) buttons.getLayoutParams();
-        lp.addRule(RelativeLayout.ALIGN_TOP, R.id.leftBlock);
-        lp.removeRule(RelativeLayout.ALIGN_BOTTOM);
-        lp.topMargin = 0;
-        lp.bottomMargin = 0;
-        buttons.setLayoutParams(lp);
-        // Either side can be laid out first; update after both without requesting another layout mid-pass.
-        Runnable align = () -> buttons.setTranslationY(clockRow.getTop() + clock.getTop()
-                + (clock.getHeight() - buttons.getHeight()) / 2f);
-        clockRow.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> align.run());
-        buttons.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> align.run());
     }
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
@@ -3196,12 +3177,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     new int[][]{new int[]{android.R.attr.state_focused}, new int[0]},
                     new int[]{VpnBadge.pillInkColor(up, true), VpnBadge.pillInkColor(up, false)});
             if (iconOnlyVpn) {
-                // An open lock on the plain glass button, or the closed lock outlined in green like the pill (solid
-                // while focused); the words go to talkback.
+                btnVpn.setText("");
                 btnVpn.setContentDescription(getString(up ? R.string.vpn : R.string.vpn_off));
-                btnVpn.setBackground(up ? VpnBadge.pillBackground(true, density) : vpnPlainBackground.newDrawable());
-                btnVpn.setCompoundDrawablesRelativeWithIntrinsicBounds(VpnBadge.iconOnlyLock(up), 0, 0, 0);
-                btnVpn.setCompoundDrawableTintList(up ? ink : vpnPlainInk);
+                btnVpn.setBackground(vpnPlainBackground.newDrawable());
+                btnVpn.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_tailscale, 0, 0, 0);
+                int restInk = up ? 0xFFFFFFFF : 0x66FFFFFF;
+                btnVpn.setCompoundDrawableTintList(new ColorStateList(
+                        new int[][]{new int[]{android.R.attr.state_focused}, new int[0]},
+                        new int[]{0xFF111111, restInk}));
                 btnVpn.setVisibility(View.VISIBLE);
                 return;
             }
