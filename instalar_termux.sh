@@ -55,13 +55,16 @@ curl -fL "$CONFIG_URL" -o "$TMP_CFG"
 adb -s "$TARGET" shell "mkdir -p /sdcard/Android/data/com.gathin.tvhome/files"
 adb -s "$TARGET" push "$TMP_CFG" "/sdcard/Android/data/com.gathin.tvhome/files/config.json"
 
-echo "==> Configurando CleanYourTV como Inicio y deshabilitando launcher oficial + setupwraith ..."
+echo "==> Configurando CleanYourTV como Inicio y deshabilitando launchers anteriores ..."
 adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.apps.tv.launcherx" || true
+adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
 adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tungsten.setupwraith" || true
+adb -s "$TARGET" shell "pm disable-user --user 0 com.spocky.projengmenu" || true
 adb -s "$TARGET" shell "cmd package set-home-activity com.gathin.tvhome/.MainActivity" || true
 adb -s "$TARGET" shell "cmd role add-role-holder android.app.role.HOME com.gathin.tvhome" || true
 
 echo "==> Iniciando CleanYourTV ..."
+adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
 adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
 
 rm -f "$TMP_APK" "$TMP_CFG"

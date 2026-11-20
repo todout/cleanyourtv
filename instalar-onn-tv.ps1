@@ -23,9 +23,12 @@ if (Test-Path $CfgPath) {
 }
 
 & $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
+& $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tvlauncher
 & $AdbPath -s $Target shell pm disable-user --user 0 com.google.android.tungsten.setupwraith
+& $AdbPath -s $Target shell pm disable-user --user 0 com.spocky.projengmenu
 & $AdbPath -s $Target shell cmd package set-home-activity com.gathin.tvhome/.MainActivity
 & $AdbPath -s $Target shell cmd role add-role-holder android.app.role.HOME com.gathin.tvhome
+& $AdbPath -s $Target shell am force-stop com.gathin.tvhome
 & $AdbPath -s $Target shell am start -n com.gathin.tvhome/.MainActivity
 
 Write-Host "CleanYourTV instalado y configurado como Inicio en $Target" -ForegroundColor Green
