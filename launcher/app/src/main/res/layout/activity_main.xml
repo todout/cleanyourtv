@@ -373,7 +373,8 @@
         </RelativeLayout>
 
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
-        <FrameLayout
+        <com.gathin.tvhome.FadingFrameLayout
+            android:id="@+id/gridWrapper"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -391,12 +392,10 @@
                 android:paddingEnd="10dp"
                 android:clipToPadding="false"
                 android:clipChildren="false"
-                android:requiresFadingEdge="vertical"
-                android:fadingEdgeLength="28dp"
                 android:overScrollMode="never"
                 android:scrollbars="none"
                 android:descendantFocusability="afterDescendants" />
-        </FrameLayout>
+        </com.gathin.tvhome.FadingFrameLayout>
     </LinearLayout>
 
     <!-- Floating weather widget on top-right (outside header LinearLayout so it never shrinks the app grid) -->

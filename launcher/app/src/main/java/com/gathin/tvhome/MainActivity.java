@@ -762,6 +762,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                View parent = (View) rv.getParent();
+                if (parent instanceof FadingFrameLayout) {
+                    ((FadingFrameLayout) parent).setFadeTop(rv.canScrollVertically(-1));
+                }
                 if (!glassShown) return;
                 glassTargetY -= dy;
                 glassScrollShift -= dy;
