@@ -1449,13 +1449,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void openTrailer(String ytId) {
+        android.net.Uri uri = android.net.Uri.parse("https://www.youtube.com/watch?v=" + ytId);
         try {
-            Intent yt = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("vnd.youtube:" + ytId));
+            Intent yt = new Intent(Intent.ACTION_VIEW, uri);
+            yt.setPackage("com.google.android.youtube.tv");
             startActivity(yt);
         } catch (Exception e) {
             try {
-                startActivity(new Intent(Intent.ACTION_VIEW,
-                        android.net.Uri.parse("https://www.youtube.com/watch?v=" + ytId)));
+                startActivity(new Intent(Intent.ACTION_VIEW, uri));
             } catch (Exception ignored) {
             }
         }
