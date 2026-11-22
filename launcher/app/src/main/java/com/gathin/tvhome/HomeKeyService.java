@@ -306,11 +306,15 @@ public class HomeKeyService extends AccessibilityService {
             redirectHomeKey(event);
             return false;
         }
-        if (event.getKeyCode() == KeyEvent.KEYCODE_PROFILE_SWITCH && getPackageName().equals(lastWindowPackage)) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_PROFILE_SWITCH) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
-                Intent prev = new Intent("com.gathin.tvhome.ACTION_PREV_WALLPAPER");
-                prev.setPackage(getPackageName());
-                sendBroadcast(prev);
+                if (getPackageName().equals(lastWindowPackage) || lastWindowPackage.isEmpty()) {
+                    Intent prev = new Intent("com.gathin.tvhome.ACTION_PREV_WALLPAPER");
+                    prev.setPackage(getPackageName());
+                    sendBroadcast(prev);
+                } else {
+                    openHome();
+                }
             }
             return true;
         }

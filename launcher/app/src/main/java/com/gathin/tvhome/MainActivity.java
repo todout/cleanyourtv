@@ -780,8 +780,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 });
             }
             if (wallpaperActions != null) {
-                int ah = wallpaperActions.getHeight() > 0 ? wallpaperActions.getHeight() : Math.round(34 * density);
-                int actionsTop = container.getPaddingTop() + header.getHeight() + wantMargin - ah - Math.round(4 * density);
+                int ah = wallpaperActions.getHeight() > 0 ? wallpaperActions.getHeight() : Math.round(28 * density);
+                int actionsTop = container.getPaddingTop() + header.getHeight() + wantMargin - ah - Math.round(14 * density);
                 ViewGroup.MarginLayoutParams alp = (ViewGroup.MarginLayoutParams) wallpaperActions.getLayoutParams();
                 if (actionsTop > 0 && alp.topMargin != actionsTop) {
                     alp.topMargin = actionsTop;
