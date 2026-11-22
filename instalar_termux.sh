@@ -66,7 +66,9 @@ if adb -s "$TARGET" shell "pm path com.google.android.apps.tv.launcherx" | grep 
     adb -s "$TARGET" shell "pm enable com.google.android.apps.tv.launcherx" || true
     adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
     adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
-    adb -s "$TARGET" shell "settings put secure enabled_accessibility_services '' && settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
+    adb -s "$TARGET" shell "settings put secure enabled_accessibility_services ''" || true
+    sleep 1
+    adb -s "$TARGET" shell "settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
 else
     # Android TV (ej. Mi Box S): deshabilitar tvlauncher
     adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
