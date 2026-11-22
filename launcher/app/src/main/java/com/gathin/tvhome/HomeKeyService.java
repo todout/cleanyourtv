@@ -80,6 +80,7 @@ public class HomeKeyService extends AccessibilityService {
     /** app_keys "front:" entries; the package in front goes to RemoteKeys.frontPackage, for both helpers. */
     private Map<Integer, String> frontAppKeys = Collections.emptyMap();
     private Map<Integer, String> frontAppScancodes = Collections.emptyMap();
+    private String lastWindowPackage = "";
     /** power_on_home_always: Home at every power-on, not only over Live TV. */
     private boolean powerOnAlways;
     /** power_on_home: re-arms after the screen turns on; null unless the key is on. */
@@ -305,6 +306,14 @@ public class HomeKeyService extends AccessibilityService {
             redirectHomeKey(event);
             return false;
         }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_PROFILE_SWITCH && getPackageName().equals(lastWindowPackage)) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                Intent prev = new Intent("com.gathin.tvhome.ACTION_PREV_WALLPAPER");
+                prev.setPackage(getPackageName());
+                sendBroadcast(prev);
+            }
+            return true;
+        }
         if (event.getKeyCode() != KeyEvent.KEYCODE_ALL_APPS) return false;
         if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) openHome();
         return true;
@@ -321,6 +330,9 @@ public class HomeKeyService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
+        if (event.getPackageName() != null) {
+            lastWindowPackage = event.getPackageName().toString();
+        }
         // app_keys "front:" entries: only activities count, so a toast or the volume bar doesn't change the app in front.
         if ((!frontAppKeys.isEmpty() || !frontAppScancodes.isEmpty())
                 && event.getPackageName() != null && event.getClassName() != null) {

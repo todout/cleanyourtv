@@ -565,6 +565,37 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Discrete wallpaper action pills (trailer + more info), positioned just above the dock on the left -->
+    <LinearLayout
+        android:id="@+id/wallpaperActions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="32dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/btnTrailer"
+            style="@style/TopButton"
+            android:alpha="0.92"
+            android:textSize="12sp"
+            android:text="Ver tráiler"
+            android:drawableStart="@drawable/ic_play"
+            android:nextFocusDown="@+id/grid"
+            android:nextFocusUp="@+id/btnSettings" />
+
+        <TextView
+            android:id="@+id/btnMoreInfo"
+            style="@style/TopButton"
+            android:alpha="0.92"
+            android:textSize="12sp"
+            android:text="Más info"
+            android:drawableStart="@drawable/ic_info"
+            android:nextFocusDown="@+id/grid"
+            android:nextFocusUp="@+id/btnSettings" />
+    </LinearLayout>
+
     <!-- The single floating glass highlight that springs between tiles. -->
     <com.gathin.tvhome.GlassView
         android:id="@+id/glass"

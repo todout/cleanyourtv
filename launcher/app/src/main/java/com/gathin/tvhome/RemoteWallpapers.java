@@ -43,6 +43,8 @@ final class RemoteWallpapers {
                 JSONArray arr = new JSONArray(body);
                 if (arr.length() == 0) return;
 
+                saveMetaFile(new File(baseDir, "wallpapers_meta.json"), body);
+
                 File wallpapersDir = new File(baseDir, "wallpapers");
                 if (!wallpapersDir.exists() && !wallpapersDir.mkdirs()) return;
 
@@ -124,6 +126,47 @@ final class RemoteWallpapers {
         } catch (Exception ignored) {
         }
         return DEFAULT_URL;
+    }
+
+    private static String metaCacheKey = "";
+    private static java.util.Map<String, JSONObject> metaCache = new java.util.HashMap<>();
+
+    static synchronized JSONObject findMeta(android.content.Context ctx, String displayedFilename) {
+        if (displayedFilename == null || displayedFilename.isEmpty()) return null;
+        File baseDir = ctx.getExternalFilesDir(null);
+        if (baseDir == null) return null;
+        File metaFile = new File(baseDir, "wallpapers_meta.json");
+        if (!metaFile.isFile()) return null;
+        String key = metaFile.lastModified() + ":" + metaFile.length();
+        if (!key.equals(metaCacheKey)) {
+            java.util.Map<String, JSONObject> map = new java.util.HashMap<>();
+            try (InputStream in = new java.io.FileInputStream(metaFile)) {
+                byte[] bytes = new byte[(int) Math.min(metaFile.length(), 1024 * 1024)];
+                int read = in.read(bytes);
+                if (read > 0) {
+                    JSONArray arr = new JSONArray(new String(bytes, 0, read, StandardCharsets.UTF_8));
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = arr.optJSONObject(i);
+                        if (obj == null) continue;
+                        String imgUrl = obj.optString("url_img", obj.optString("url", ""));
+                        if (!imgUrl.isEmpty()) {
+                            map.put(sanitizeFilename(imgUrl), obj);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+            metaCache = map;
+            metaCacheKey = key;
+        }
+        return metaCache.get(displayedFilename);
+    }
+
+    private static void saveMetaFile(File dest, String body) {
+        try (FileOutputStream out = new FileOutputStream(dest)) {
+            out.write(body.getBytes(StandardCharsets.UTF_8));
+        } catch (Exception ignored) {
+        }
     }
 
     private static String sanitizeFilename(String url) {

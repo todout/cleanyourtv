@@ -52,6 +52,7 @@ final class WallpaperPlayer {
     private boolean closed;
     private boolean loading;
     private String displayed = "";
+    private Runnable onWallpaperChanged;
     /** wallpaper_captions: the shown picture's name from wallpapers/captions.txt; null when off or there are none. */
     private final TextView caption;
     private final Map<String, String> names;
@@ -165,6 +166,48 @@ final class WallpaperPlayer {
         decoder.shutdownNow();
     }
 
+    String getDisplayed() {
+        return displayed;
+    }
+
+    void setOnWallpaperChanged(Runnable listener) {
+        onWallpaperChanged = listener;
+    }
+
+    void previous() {
+        if (!active || closed || loading || files.isEmpty()) return;
+        List<File> playable = playable();
+        if (playable.isEmpty()) return;
+        int idx = -1;
+        for (int i = 0; i < playable.size(); i++) {
+            if (playable.get(i).getName().equals(displayed)) {
+                idx = i;
+                break;
+            }
+        }
+        int prevIdx = idx <= 0 ? playable.size() - 1 : idx - 1;
+        File prev = playable.get(prevIdx);
+        if (prev.getName().equals(displayed) && playable.size() == 1) return;
+        loading = true;
+        decoder.execute(() -> {
+            Bitmap bitmap = decode(prev);
+            root.post(() -> {
+                loading = false;
+                if (closed || !active) {
+                    if (bitmap != null) bitmap.recycle();
+                    return;
+                }
+                if (bitmap == null) return;
+                show(bitmap);
+                displayed = prev.getName();
+                showCaption(true);
+                preferences.edit().putString("image", displayed)
+                        .putLong("changed", System.currentTimeMillis()).apply();
+                if (onWallpaperChanged != null) onWallpaperChanged.run();
+            });
+        });
+    }
+
     void update() {
         if (!active || closed || loading || files.isEmpty()) return;
         String previous = preferences.getString("image", "");
@@ -199,6 +242,7 @@ final class WallpaperPlayer {
                     preferences.edit().putString("image", displayed)
                             .putLong("changed", System.currentTimeMillis()).apply();
                 }
+                if (onWallpaperChanged != null) onWallpaperChanged.run();
             });
         });
     }

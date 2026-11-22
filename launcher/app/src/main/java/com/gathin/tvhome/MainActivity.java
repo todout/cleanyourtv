@@ -513,6 +513,32 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // the theme's background, so launch looks the same.
         getWindow().setBackgroundDrawable(null);
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
+        wallpaperActions = findViewById(R.id.wallpaperActions);
+        btnTrailer = findViewById(R.id.btnTrailer);
+        btnMoreInfo = findViewById(R.id.btnMoreInfo);
+        wallpaperPlayer.setOnWallpaperChanged(this::updateWallpaperActions);
+        btnTrailer.setOnClickListener(v -> {
+            org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
+            String yt = meta != null ? meta.optString("youtube_id", "") : "";
+            if (!yt.isEmpty()) openTrailer(yt);
+        });
+        btnMoreInfo.setOnClickListener(v -> {
+            org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
+            if (meta != null) WallpaperInfoDialog.show(this, meta);
+        });
+        updateWallpaperActions();
+        prevWallpaperReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                wallpaperPlayer.previous();
+            }
+        };
+        IntentFilter prevFilter = new IntentFilter("com.gathin.tvhome.ACTION_PREV_WALLPAPER");
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(prevWallpaperReceiver, prevFilter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(prevWallpaperReceiver, prevFilter);
+        }
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
         glass = findViewById(R.id.glass);
@@ -752,6 +778,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     });
                     grid.requestLayout();
                 });
+            }
+            if (wallpaperActions != null) {
+                int ah = wallpaperActions.getHeight() > 0 ? wallpaperActions.getHeight() : Math.round(34 * density);
+                int actionsTop = container.getPaddingTop() + header.getHeight() + wantMargin - ah - Math.round(4 * density);
+                ViewGroup.MarginLayoutParams alp = (ViewGroup.MarginLayoutParams) wallpaperActions.getLayoutParams();
+                if (actionsTop > 0 && alp.topMargin != actionsTop) {
+                    alp.topMargin = actionsTop;
+                    wallpaperActions.post(wallpaperActions::requestLayout);
+                }
             }
             // Cold start or column count > 4: the first focus can run before the grid has its final width or
             // padding, leaving the glass at the XML design size until a key is pressed.
@@ -1396,6 +1431,36 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (!onTile) hideGlass();
     };
 
+    private View wallpaperActions;
+    private TextView btnTrailer, btnMoreInfo;
+    private BroadcastReceiver prevWallpaperReceiver;
+
+    private void updateWallpaperActions() {
+        if (wallpaperActions == null || wallpaperPlayer == null) return;
+        org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
+        if (meta == null) {
+            wallpaperActions.setVisibility(View.GONE);
+            return;
+        }
+        String yt = meta.optString("youtube_id", "");
+        btnTrailer.setVisibility(yt.isEmpty() ? View.GONE : View.VISIBLE);
+        btnMoreInfo.setVisibility(View.VISIBLE);
+        wallpaperActions.setVisibility(View.VISIBLE);
+    }
+
+    private void openTrailer(String ytId) {
+        try {
+            Intent yt = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse("vnd.youtube:" + ytId));
+            startActivity(yt);
+        } catch (Exception e) {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,
+                        android.net.Uri.parse("https://www.youtube.com/watch?v=" + ytId)));
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -1405,6 +1470,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         cancelHoldOk();
         if (gameDay != null) gameDay.shutdown();
         unregisterReceiver(packageReceiver);
+        if (prevWallpaperReceiver != null) unregisterReceiver(prevWallpaperReceiver);
         if (openOnStartOnWake) unregisterReceiver(wakeReceiver);
         wallpaperPlayer.close();
         ConnectivityManager cm = getApplicationContext().getSystemService(ConnectivityManager.class);   // as registered
