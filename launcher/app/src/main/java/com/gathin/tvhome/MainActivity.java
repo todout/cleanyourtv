@@ -524,7 +524,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         btnMoreInfo.setOnClickListener(v -> {
             org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
-            if (meta != null) WallpaperInfoDialog.show(this, meta);
+            if (meta != null) {
+                String yt = meta.optString("youtube_id", "");
+                WallpaperInfoDialog.show(this, meta, yt.isEmpty() ? null : () -> openTrailer(yt));
+            }
         });
         updateWallpaperActions();
         prevWallpaperReceiver = new BroadcastReceiver() {
@@ -1101,6 +1104,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        WallpaperInfoDialog.dismissCurrent();
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openLibraryIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;

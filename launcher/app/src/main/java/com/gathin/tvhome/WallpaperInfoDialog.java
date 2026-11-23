@@ -35,14 +35,30 @@ final class WallpaperInfoDialog {
     private static final ExecutorService EXEC = Executors.newFixedThreadPool(2);
     private static final LruCache<String, Bitmap> CACHE = new LruCache<>(24);
     private static final Handler MAIN = new Handler(Looper.getMainLooper());
+    private static Dialog activeDialog;
 
     private WallpaperInfoDialog() {}
 
-    static void show(Context context, JSONObject meta) {
+    static void dismissCurrent() {
+        if (activeDialog != null && activeDialog.isShowing()) {
+            try {
+                activeDialog.dismiss();
+            } catch (Exception ignored) {
+            }
+        }
+        activeDialog = null;
+    }
+
+    static void show(Context context, JSONObject meta, Runnable onPlayTrailer) {
         if (meta == null) return;
+        dismissCurrent();
         float dp = context.getResources().getDisplayMetrics().density;
 
         Dialog dialog = new Dialog(context);
+        activeDialog = dialog;
+        dialog.setOnDismissListener(d -> {
+            if (activeDialog == dialog) activeDialog = null;
+        });
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         LinearLayout card = new LinearLayout(context);
@@ -201,6 +217,49 @@ final class WallpaperInfoDialog {
         }
 
         scroll.addView(info);
+
+        String ytId = meta.optString("youtube_id", "");
+        if (!ytId.isEmpty() && onPlayTrailer != null) {
+            TextView trailerBtn = new TextView(context);
+            trailerBtn.setText("▶  Ver tráiler");
+            trailerBtn.setTextColor(Color.WHITE);
+            trailerBtn.setTextSize(13);
+            trailerBtn.setTypeface(UiFont.get(context, R.string.font_medium));
+            trailerBtn.setFocusable(true);
+            trailerBtn.setFocusableInTouchMode(true);
+            trailerBtn.setGravity(Gravity.CENTER);
+            int hPad = Math.round(16 * dp);
+            int vPad = Math.round(8 * dp);
+            trailerBtn.setPadding(hPad, vPad, hPad, vPad);
+
+            GradientDrawable normalBg = new GradientDrawable();
+            normalBg.setColor(0x33FFFFFF);
+            normalBg.setCornerRadius(20 * dp);
+            normalBg.setStroke(Math.round(1 * dp), 0x55FFFFFF);
+
+            GradientDrawable focusBg = new GradientDrawable();
+            focusBg.setColor(0x55FFFFFF);
+            focusBg.setCornerRadius(20 * dp);
+            focusBg.setStroke(Math.round(2 * dp), Color.WHITE);
+
+            trailerBtn.setBackground(normalBg);
+            trailerBtn.setOnFocusChangeListener((v, hasFocus) -> {
+                v.setBackground(hasFocus ? focusBg : normalBg);
+                v.animate().scaleX(hasFocus ? 1.05f : 1f).scaleY(hasFocus ? 1.05f : 1f).setDuration(120).start();
+            });
+            trailerBtn.setOnClickListener(v -> {
+                dismissCurrent();
+                onPlayTrailer.run();
+            });
+
+            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            blp.topMargin = Math.round(14 * dp);
+            trailerBtn.setLayoutParams(blp);
+            info.addView(trailerBtn);
+            trailerBtn.requestFocus();
+        }
+
         card.addView(scroll);
 
         dialog.setContentView(card);
