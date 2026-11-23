@@ -160,10 +160,10 @@ final class WallpaperInfoDialog {
 
         LinearLayout bottomBar = new LinearLayout(context);
         bottomBar.setOrientation(LinearLayout.HORIZONTAL);
-        bottomBar.setGravity(Gravity.CENTER_VERTICAL);
+        bottomBar.setGravity(Gravity.BOTTOM);
         bottomBar.setClipChildren(false);
         bottomBar.setClipToPadding(false);
-        bottomBar.setPadding(0, Math.round(10 * dp), Math.round(4 * dp), Math.round(4 * dp));
+        bottomBar.setPadding(0, Math.round(10 * dp), Math.round(4 * dp), 0);
 
         LinearLayout provCol = new LinearLayout(context);
         provCol.setOrientation(LinearLayout.VERTICAL);
@@ -232,7 +232,7 @@ final class WallpaperInfoDialog {
 
         LinearLayout btnGroup = new LinearLayout(context);
         btnGroup.setOrientation(LinearLayout.HORIZONTAL);
-        btnGroup.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        btnGroup.setGravity(Gravity.END | Gravity.BOTTOM);
         btnGroup.setClipChildren(false);
         btnGroup.setClipToPadding(false);
         LinearLayout.LayoutParams bglp = new LinearLayout.LayoutParams(
