@@ -362,9 +362,10 @@ final class WallpaperInfoDialog {
         }
         String logoUrl = meta.optString("top10_logo", "").trim();
         int fill;
+        boolean useNetflixDrawable = false;
         if (lower.contains("netflix")) {
             fill = 0xF2E50914;
-            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/rK1KljqmbvO9HQa1PBFLILWah72.png";
+            useNetflixDrawable = true;
         } else if (lower.contains("disney")) {
             fill = 0xF2113CCF;
             if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/5eZ872CghnHFLB1j8grszbrx0dx.png";
@@ -402,7 +403,10 @@ final class WallpaperInfoDialog {
             }
         });
         logoView.setElevation(2 * dp);
-        if (!logoUrl.isEmpty()) {
+        if (useNetflixDrawable) {
+            logoView.setImageResource(R.drawable.ic_netflix_n);
+            logoView.setVisibility(View.VISIBLE);
+        } else if (!logoUrl.isEmpty()) {
             loadImage(logoUrl, logoView);
             logoView.setVisibility(View.VISIBLE);
         } else {

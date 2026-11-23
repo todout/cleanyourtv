@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="28"
+    android:viewportHeight="28">
+    <!-- Dark square background -->
+    <path
+        android:fillColor="#FF111111"
+        android:pathData="M0,0h28v28h-28z" />
+    <!-- Left vertical stem (darker crimson) -->
+    <path
+        android:fillColor="#FFB20710"
+        android:pathData="M7.5,5h3.7v18h-3.7z" />
+    <!-- Right vertical stem (darker crimson) -->
+    <path
+        android:fillColor="#FFB20710"
+        android:pathData="M16.8,5h3.7v18h-3.7z" />
+    <!-- Diagonal ribbon (iconic bright Netflix red) -->
+    <path
+        android:fillColor="#FFE50914"
+        android:pathData="M7.5,5L11.2,5L20.5,23L16.8,23Z" />
+</vector>

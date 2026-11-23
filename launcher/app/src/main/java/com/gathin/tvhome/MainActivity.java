@@ -1452,6 +1452,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
         if (meta == null) {
             wallpaperActions.setVisibility(View.GONE);
+            if (top10Sticker != null) top10Sticker.setVisibility(View.GONE);
             return;
         }
         String yt = meta.optString("youtube_id", "");
