@@ -64,14 +64,24 @@ adb -s "$TARGET" shell "cmd role add-role-holder android.app.role.HOME com.gathi
 if adb -s "$TARGET" shell "pm path com.google.android.apps.tv.launcherx" | grep -q "package:"; then
     # Google TV (Onn TV): mantener launcherx habilitado para que funcione Google Assistant (micrófono)
     adb -s "$TARGET" shell "pm enable com.google.android.apps.tv.launcherx" || true
+    adb -s "$TARGET" shell "rm -f /sdcard/Android/data/com.gathin.tvhome/files/wallpapers_meta.json" || true
     adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
     adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
+    sleep 1
     adb -s "$TARGET" shell "settings put secure enabled_accessibility_services ''" || true
     sleep 1
     adb -s "$TARGET" shell "settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
+    sleep 2
+    # Verificar que HomeKeyService haya quedado enlazado (si no, reintentar una vez)
+    if ! adb -s "$TARGET" shell "dumpsys accessibility" | grep -q "HomeKeyService"; then
+        adb -s "$TARGET" shell "settings put secure enabled_accessibility_services ''" || true
+        sleep 1
+        adb -s "$TARGET" shell "settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
+    fi
 else
     # Android TV (ej. Mi Box S): deshabilitar tvlauncher
     adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
+    adb -s "$TARGET" shell "rm -f /sdcard/Android/data/com.gathin.tvhome/files/wallpapers_meta.json" || true
     adb -s "$TARGET" shell "am force-stop com.gathin.tvhome"
     adb -s "$TARGET" shell "am start -n com.gathin.tvhome/.MainActivity"
 fi
