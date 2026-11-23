@@ -158,19 +158,31 @@ final class WallpaperInfoDialog {
             info.addView(ovView);
         }
 
+        LinearLayout bottomBar = new LinearLayout(context);
+        bottomBar.setOrientation(LinearLayout.HORIZONTAL);
+        bottomBar.setGravity(Gravity.CENTER_VERTICAL);
+        bottomBar.setClipChildren(false);
+        bottomBar.setClipToPadding(false);
+        bottomBar.setPadding(0, Math.round(10 * dp), Math.round(4 * dp), Math.round(4 * dp));
+
+        LinearLayout provCol = new LinearLayout(context);
+        provCol.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams pclp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        provCol.setLayoutParams(pclp);
+
         JSONArray provArr = meta.optJSONArray("providers");
         TextView provLabel = new TextView(context);
         provLabel.setText("Disponible en Argentina");
         provLabel.setTextColor(0x99FFFFFF);
         provLabel.setTextSize(12);
-        provLabel.setPadding(0, Math.round(10 * dp), 0, Math.round(6 * dp));
-        info.addView(provLabel);
+        provLabel.setPadding(0, 0, 0, Math.round(6 * dp));
+        provCol.addView(provLabel);
 
         if (provArr != null && provArr.length() > 0) {
             LinearLayout provRow = new LinearLayout(context);
             provRow.setOrientation(LinearLayout.HORIZONTAL);
             provRow.setGravity(Gravity.CENTER_VERTICAL);
-            int count = Math.min(provArr.length(), 6);
+            int count = Math.min(provArr.length(), 4);
             for (int i = 0; i < count; i++) {
                 JSONObject p = provArr.optJSONObject(i);
                 if (p == null) continue;
@@ -207,16 +219,16 @@ final class WallpaperInfoDialog {
 
                 provRow.addView(item);
             }
-            info.addView(provRow);
+            provCol.addView(provRow);
         } else {
             TextView none = new TextView(context);
-            none.setText("Sin plataformas de suscripción informadas en AR");
+            none.setText("Sin plataformas informadas en AR");
             none.setTextColor(0x80FFFFFF);
             none.setTextSize(12);
-            info.addView(none);
+            provCol.addView(none);
         }
 
-        scroll.addView(info);
+        bottomBar.addView(provCol);
 
         String ytId = meta.optString("youtube_id", "");
         if (!ytId.isEmpty() && onPlayTrailer != null) {
@@ -229,7 +241,7 @@ final class WallpaperInfoDialog {
             trailerBtn.setFocusableInTouchMode(true);
             trailerBtn.setGravity(Gravity.CENTER);
             int hPad = Math.round(16 * dp);
-            int vPad = Math.round(8 * dp);
+            int vPad = Math.round(9 * dp);
             trailerBtn.setPadding(hPad, vPad, hPad, vPad);
 
             GradientDrawable normalBg = new GradientDrawable();
@@ -254,11 +266,18 @@ final class WallpaperInfoDialog {
 
             LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            blp.topMargin = Math.round(14 * dp);
+            blp.setMarginStart(Math.round(12 * dp));
             trailerBtn.setLayoutParams(blp);
-            info.addView(trailerBtn);
+            bottomBar.addView(trailerBtn);
             trailerBtn.requestFocus();
         }
+
+        info.setClipChildren(false);
+        info.setClipToPadding(false);
+        info.addView(bottomBar);
+        scroll.setClipChildren(false);
+        scroll.setClipToPadding(false);
+        scroll.addView(info);
 
         card.addView(scroll);
 
