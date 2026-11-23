@@ -72,12 +72,15 @@ if adb -s "$TARGET" shell "pm path com.google.android.apps.tv.launcherx" | grep 
     sleep 1
     adb -s "$TARGET" shell "settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
     sleep 2
-    # Verificar que HomeKeyService haya quedado enlazado (si no, reintentar una vez)
-    if ! adb -s "$TARGET" shell "dumpsys accessibility" | grep -q "HomeKeyService"; then
+    # Verificar que HomeKeyService haya quedado enlazado (Bound services) y no vacío ni crasheado
+    if ! adb -s "$TARGET" shell "dumpsys accessibility" | grep -q "Bound services:{Service\["; then
         adb -s "$TARGET" shell "settings put secure enabled_accessibility_services ''" || true
         sleep 1
         adb -s "$TARGET" shell "settings put secure enabled_accessibility_services com.gathin.tvhome/com.gathin.tvhome.HomeKeyService && settings put secure accessibility_enabled 1" || true
+        sleep 2
     fi
+    echo "==> Verificando servicio de accesibilidad (HomeKeyService) ..."
+    adb -s "$TARGET" shell "dumpsys accessibility" | grep -E "Bound services|Enabled services|Crashed services" || true
 else
     # Android TV (ej. Mi Box S): deshabilitar tvlauncher
     adb -s "$TARGET" shell "pm disable-user --user 0 com.google.android.tvlauncher" || true
