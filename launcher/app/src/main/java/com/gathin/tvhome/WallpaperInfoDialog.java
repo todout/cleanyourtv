@@ -230,46 +230,38 @@ final class WallpaperInfoDialog {
 
         bottomBar.addView(provCol);
 
+        LinearLayout btnGroup = new LinearLayout(context);
+        btnGroup.setOrientation(LinearLayout.HORIZONTAL);
+        btnGroup.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+        btnGroup.setClipChildren(false);
+        btnGroup.setClipToPadding(false);
+        LinearLayout.LayoutParams bglp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        bglp.setMarginStart(Math.round(12 * dp));
+        btnGroup.setLayoutParams(bglp);
+
         String ytId = meta.optString("youtube_id", "");
+        TextView trailerBtn = null;
         if (!ytId.isEmpty() && onPlayTrailer != null) {
-            TextView trailerBtn = new TextView(context);
-            trailerBtn.setText("▶  Ver tráiler");
-            trailerBtn.setTextColor(Color.WHITE);
-            trailerBtn.setTextSize(13);
-            trailerBtn.setTypeface(UiFont.get(context, R.string.font_medium));
-            trailerBtn.setFocusable(true);
-            trailerBtn.setFocusableInTouchMode(true);
-            trailerBtn.setGravity(Gravity.CENTER);
-            int hPad = Math.round(16 * dp);
-            int vPad = Math.round(9 * dp);
-            trailerBtn.setPadding(hPad, vPad, hPad, vPad);
-
-            GradientDrawable normalBg = new GradientDrawable();
-            normalBg.setColor(0x33FFFFFF);
-            normalBg.setCornerRadius(20 * dp);
-            normalBg.setStroke(Math.round(1 * dp), 0x55FFFFFF);
-
-            GradientDrawable focusBg = new GradientDrawable();
-            focusBg.setColor(0x55FFFFFF);
-            focusBg.setCornerRadius(20 * dp);
-            focusBg.setStroke(Math.round(2 * dp), Color.WHITE);
-
-            trailerBtn.setBackground(normalBg);
-            trailerBtn.setOnFocusChangeListener((v, hasFocus) -> {
-                v.setBackground(hasFocus ? focusBg : normalBg);
-                v.animate().scaleX(hasFocus ? 1.05f : 1f).scaleY(hasFocus ? 1.05f : 1f).setDuration(120).start();
-            });
-            trailerBtn.setOnClickListener(v -> {
+            trailerBtn = makeActionPill(context, "Ver tráiler", R.drawable.ic_play, dp, () -> {
                 dismissCurrent();
                 onPlayTrailer.run();
             });
-
-            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            blp.setMarginStart(Math.round(12 * dp));
-            trailerBtn.setLayoutParams(blp);
-            bottomBar.addView(trailerBtn);
+            tlp.setMarginEnd(Math.round(8 * dp));
+            trailerBtn.setLayoutParams(tlp);
+            btnGroup.addView(trailerBtn);
+        }
+
+        TextView closeBtn = makeActionPill(context, "Cerrar", R.drawable.ic_close, dp, WallpaperInfoDialog::dismissCurrent);
+        btnGroup.addView(closeBtn);
+
+        bottomBar.addView(btnGroup);
+        if (trailerBtn != null) {
             trailerBtn.requestFocus();
+        } else {
+            closeBtn.requestFocus();
         }
 
         info.setClipChildren(false);
@@ -287,6 +279,40 @@ final class WallpaperInfoDialog {
             w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         }
         dialog.show();
+    }
+
+    private static TextView makeActionPill(Context context, String label, int iconRes, float dp, Runnable onClick) {
+        TextView btn = new TextView(context);
+        btn.setText(label);
+        btn.setTextColor(Color.WHITE);
+        btn.setTextSize(11);
+        btn.setTypeface(UiFont.get(context, R.string.font_medium));
+        btn.setFocusable(true);
+        btn.setFocusableInTouchMode(true);
+        btn.setGravity(Gravity.CENTER_VERTICAL);
+        btn.setCompoundDrawablesRelativeWithIntrinsicBounds(iconRes, 0, 0, 0);
+        btn.setCompoundDrawablePadding(Math.round(6 * dp));
+        int hPad = Math.round(12 * dp);
+        int vPad = Math.round(6 * dp);
+        btn.setPadding(hPad, vPad, hPad, vPad);
+
+        GradientDrawable normalBg = new GradientDrawable();
+        normalBg.setColor(0x26FFFFFF);
+        normalBg.setCornerRadius(18 * dp);
+        normalBg.setStroke(Math.round(1 * dp), 0x40FFFFFF);
+
+        GradientDrawable focusBg = new GradientDrawable();
+        focusBg.setColor(0x4DFFFFFF);
+        focusBg.setCornerRadius(18 * dp);
+        focusBg.setStroke(Math.round(2 * dp), Color.WHITE);
+
+        btn.setBackground(normalBg);
+        btn.setOnFocusChangeListener((v, hasFocus) -> {
+            v.setBackground(hasFocus ? focusBg : normalBg);
+            v.animate().scaleX(hasFocus ? 1.05f : 1f).scaleY(hasFocus ? 1.05f : 1f).setDuration(120).start();
+        });
+        btn.setOnClickListener(v -> onClick.run());
+        return btn;
     }
 
     private static void addField(Context ctx, LinearLayout parent, String label, String value, float dp) {
