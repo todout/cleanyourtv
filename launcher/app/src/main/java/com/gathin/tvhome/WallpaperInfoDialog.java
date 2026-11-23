@@ -131,6 +131,17 @@ final class WallpaperInfoDialog {
 
         addField(context, info, "Premios", meta.optString("awards", ""), dp);
 
+        String overview = meta.optString("overview", "");
+        if (!overview.isEmpty()) {
+            TextView ovView = new TextView(context);
+            ovView.setText(overview);
+            ovView.setTextColor(0xCCFFFFFF);
+            ovView.setTextSize(13);
+            ovView.setLineSpacing(2 * dp, 1f);
+            ovView.setPadding(0, Math.round(8 * dp), 0, Math.round(4 * dp));
+            info.addView(ovView);
+        }
+
         JSONArray provArr = meta.optJSONArray("providers");
         TextView provLabel = new TextView(context);
         provLabel.setText("Disponible en Argentina");
