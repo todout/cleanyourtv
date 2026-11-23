@@ -112,6 +112,24 @@ final class WallpaperInfoDialog {
             info.addView(enView);
         }
 
+        String top10 = meta.optString("top10", "").trim();
+        if (!top10.isEmpty()) {
+            TextView badge = new TextView(context);
+            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            blp.topMargin = Math.round(8 * dp);
+            badge.setLayoutParams(blp);
+            badge.setTextSize(11);
+            badge.setTypeface(UiFont.get(context, R.string.font_medium));
+            badge.setLetterSpacing(0.06f);
+            badge.setAllCaps(true);
+            int bh = Math.round(10 * dp);
+            int bv = Math.round(4 * dp);
+            badge.setPadding(bh, bv, bh, bv);
+            applyTop10Style(badge, top10 + " ARGENTINA", dp);
+            info.addView(badge);
+        }
+
         List<String> parts = new ArrayList<>();
         String mtype = meta.optString("media_type", "");
         String year = meta.optString("year", "");
@@ -313,6 +331,31 @@ final class WallpaperInfoDialog {
         });
         btn.setOnClickListener(v -> onClick.run());
         return btn;
+    }
+
+    static void applyTop10Style(TextView view, String label, float dp) {
+        String lower = label.toLowerCase();
+        int fill;
+        if (lower.contains("netflix")) {
+            fill = 0xE6E50914;
+        } else if (lower.contains("disney")) {
+            fill = 0xE6113CCF;
+        } else if (lower.contains("prime")) {
+            fill = 0xE600A8E1;
+        } else if (lower.contains("max")) {
+            fill = 0xE65A2DFF;
+        } else if (lower.contains("apple")) {
+            fill = 0xE62C2C2E;
+        } else {
+            fill = 0xE6D97706;
+        }
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(fill);
+        bg.setCornerRadius(14 * dp);
+        bg.setStroke(Math.round(1 * dp), 0x4DFFFFFF);
+        view.setText("★ " + label);
+        view.setTextColor(Color.WHITE);
+        view.setBackground(bg);
     }
 
     private static void addField(Context ctx, LinearLayout parent, String label, String value, float dp) {

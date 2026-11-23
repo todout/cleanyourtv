@@ -606,6 +606,29 @@
             android:drawableStart="@drawable/ic_info"
             android:nextFocusDown="@+id/grid"
             android:nextFocusUp="@+id/btnSettings" />
+
+        <TextView
+            android:id="@+id/badgeTop10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:minHeight="26dp"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="11sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.06"
+            android:textAllCaps="true"
+            android:singleLine="true"
+            android:focusable="false"
+            android:clickable="false"
+            android:importantForAccessibility="no"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- The single floating glass highlight that springs between tiles. -->

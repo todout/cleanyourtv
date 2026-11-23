@@ -516,6 +516,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         wallpaperActions = findViewById(R.id.wallpaperActions);
         btnTrailer = findViewById(R.id.btnTrailer);
         btnMoreInfo = findViewById(R.id.btnMoreInfo);
+        badgeTop10 = findViewById(R.id.badgeTop10);
         wallpaperPlayer.setOnWallpaperChanged(this::updateWallpaperActions);
         btnTrailer.setOnClickListener(v -> {
             org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
@@ -1436,7 +1437,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     };
 
     private View wallpaperActions;
-    private TextView btnTrailer, btnMoreInfo;
+    private TextView btnTrailer, btnMoreInfo, badgeTop10;
     private BroadcastReceiver prevWallpaperReceiver;
 
     private void updateWallpaperActions() {
@@ -1449,6 +1450,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String yt = meta.optString("youtube_id", "");
         btnTrailer.setVisibility(yt.isEmpty() ? View.GONE : View.VISIBLE);
         btnMoreInfo.setVisibility(View.VISIBLE);
+        if (badgeTop10 != null) {
+            String top10 = meta.optString("top10", "").trim();
+            if (top10.isEmpty()) {
+                badgeTop10.setVisibility(View.GONE);
+            } else {
+                float dp = getResources().getDisplayMetrics().density;
+                WallpaperInfoDialog.applyTop10Style(badgeTop10, top10, dp);
+                badgeTop10.setVisibility(View.VISIBLE);
+            }
+        }
         wallpaperActions.setVisibility(View.VISIBLE);
     }
 
