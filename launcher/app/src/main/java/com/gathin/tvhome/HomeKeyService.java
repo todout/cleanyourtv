@@ -308,7 +308,7 @@ public class HomeKeyService extends AccessibilityService {
         }
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROFILE_SWITCH) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
-                if (getPackageName().equals(lastWindowPackage) || lastWindowPackage.isEmpty()) {
+                if (MainActivity.inForeground) {
                     Intent prev = new Intent("com.gathin.tvhome.ACTION_PREV_WALLPAPER");
                     prev.setPackage(getPackageName());
                     sendBroadcast(prev);

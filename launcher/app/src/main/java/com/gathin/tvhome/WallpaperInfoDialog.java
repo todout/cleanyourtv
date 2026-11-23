@@ -114,20 +114,35 @@ final class WallpaperInfoDialog {
 
         String top10 = meta.optString("top10", "").trim();
         if (!top10.isEmpty()) {
-            TextView badge = new TextView(context);
-            LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+            LinearLayout sticker = new LinearLayout(context);
+            sticker.setOrientation(LinearLayout.HORIZONTAL);
+            sticker.setGravity(Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams stLp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            blp.topMargin = Math.round(8 * dp);
-            badge.setLayoutParams(blp);
-            badge.setTextSize(11);
-            badge.setTypeface(UiFont.get(context, R.string.font_medium));
-            badge.setLetterSpacing(0.06f);
-            badge.setAllCaps(true);
-            int bh = Math.round(10 * dp);
-            int bv = Math.round(4 * dp);
-            badge.setPadding(bh, bv, bh, bv);
-            applyTop10Style(badge, top10 + " ARGENTINA", dp);
-            info.addView(badge);
+            stLp.topMargin = Math.round(8 * dp);
+            sticker.setLayoutParams(stLp);
+
+            ImageView logoIv = new ImageView(context);
+            logoIv.setLayoutParams(new LinearLayout.LayoutParams(Math.round(30 * dp), Math.round(30 * dp)));
+            logoIv.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+            TextView rankTv = new TextView(context);
+            LinearLayout.LayoutParams rLp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, Math.round(24 * dp));
+            rLp.setMarginStart(Math.round(-4 * dp));
+            rankTv.setLayoutParams(rLp);
+            rankTv.setGravity(Gravity.CENTER);
+            int rh = Math.round(8 * dp);
+            rankTv.setPadding(rh, 0, rh, 0);
+            rankTv.setTextSize(10.5f);
+            rankTv.setTypeface(UiFont.get(context, R.string.font_medium), android.graphics.Typeface.BOLD);
+            rankTv.setLetterSpacing(0.06f);
+            rankTv.setAllCaps(true);
+
+            sticker.addView(logoIv);
+            sticker.addView(rankTv);
+            bindTop10Sticker(sticker, logoIv, rankTv, meta, true, dp);
+            info.addView(sticker);
         }
 
         List<String> parts = new ArrayList<>();
@@ -333,29 +348,67 @@ final class WallpaperInfoDialog {
         return btn;
     }
 
-    static void applyTop10Style(TextView view, String label, float dp) {
-        String lower = label.toLowerCase();
+    static void bindTop10Sticker(View container, ImageView logoView, TextView rankView, JSONObject meta, boolean withCountry, float dp) {
+        String top10 = meta != null ? meta.optString("top10", "").trim() : "";
+        if (top10.isEmpty()) {
+            container.setVisibility(View.GONE);
+            return;
+        }
+        String lower = top10.toLowerCase();
+        String rank = meta.optString("top10_rank", "").trim();
+        if (rank.isEmpty()) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?i)top\\s*#?(\\d+)").matcher(top10);
+            rank = m.find() ? ("TOP " + m.group(1)) : "TOP 10";
+        }
+        String logoUrl = meta.optString("top10_logo", "").trim();
         int fill;
         if (lower.contains("netflix")) {
-            fill = 0xE6E50914;
+            fill = 0xF2E50914;
+            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/rK1KljqmbvO9HQa1PBFLILWah72.png";
         } else if (lower.contains("disney")) {
-            fill = 0xE6113CCF;
+            fill = 0xF2113CCF;
+            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/5eZ872CghnHFLB1j8grszbrx0dx.png";
         } else if (lower.contains("prime")) {
-            fill = 0xE600A8E1;
+            fill = 0xF200A8E1;
+            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/gMZdpavHmxFNnLpMHwVxfqeux2g.png";
         } else if (lower.contains("max")) {
-            fill = 0xE65A2DFF;
+            fill = 0xF25A2DFF;
+            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/skypuy7SXuugIQeYg0IglmzoKaS.png";
         } else if (lower.contains("apple")) {
-            fill = 0xE62C2C2E;
+            fill = 0xF22C2C2E;
+            if (logoUrl.isEmpty()) logoUrl = "https://image.tmdb.org/t/p/w92/v9SnyvYt0U3KGgBH3Sbh3z4yODe.png";
         } else {
-            fill = 0xE6D97706;
+            fill = 0xF2D97706;
         }
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(fill);
-        bg.setCornerRadius(14 * dp);
-        bg.setStroke(Math.round(1 * dp), 0x4DFFFFFF);
-        view.setText("★ " + label);
-        view.setTextColor(Color.WHITE);
-        view.setBackground(bg);
+
+        // Sticker rectangular compacto (sin forma de botón pill)
+        GradientDrawable stickerBg = new GradientDrawable();
+        stickerBg.setColor(fill);
+        stickerBg.setCornerRadii(new float[]{
+                0, 0,
+                5 * dp, 5 * dp,
+                5 * dp, 5 * dp,
+                0, 0
+        });
+        rankView.setBackground(stickerBg);
+        rankView.setText(withCountry ? (rank + " ARGENTINA") : rank);
+        rankView.setTextColor(Color.WHITE);
+
+        logoView.setClipToOutline(true);
+        logoView.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, android.graphics.Outline outline) {
+                outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), 6 * dp);
+            }
+        });
+        logoView.setElevation(2 * dp);
+        if (!logoUrl.isEmpty()) {
+            loadImage(logoUrl, logoView);
+            logoView.setVisibility(View.VISIBLE);
+        } else {
+            logoView.setVisibility(View.GONE);
+        }
+        container.setVisibility(View.VISIBLE);
     }
 
     private static void addField(Context ctx, LinearLayout parent, String label, String value, float dp) {

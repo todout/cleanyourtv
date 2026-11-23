@@ -516,7 +516,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         wallpaperActions = findViewById(R.id.wallpaperActions);
         btnTrailer = findViewById(R.id.btnTrailer);
         btnMoreInfo = findViewById(R.id.btnMoreInfo);
-        badgeTop10 = findViewById(R.id.badgeTop10);
+        top10Sticker = findViewById(R.id.top10Sticker);
+        top10Logo = findViewById(R.id.top10Logo);
+        top10Rank = findViewById(R.id.top10Rank);
         wallpaperPlayer.setOnWallpaperChanged(this::updateWallpaperActions);
         btnTrailer.setOnClickListener(v -> {
             org.json.JSONObject meta = RemoteWallpapers.findMeta(this, wallpaperPlayer.getDisplayed());
@@ -1138,9 +1140,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         tileRefresh.onStart();
     }
 
+    static volatile boolean inForeground = false;
+
     @Override
     protected void onResume() {
         super.onResume();
+        inForeground = true;
         resumed = true;
         WeatherHelper.refreshIfNeeded(this);
         RemoteWallpapers.syncIfNeeded(this);
@@ -1359,6 +1364,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         super.onPause();
+        inForeground = false;
         resumed = false;
         // No UP reaches a paused Home, so a vendor-key hold it saw go down would still open its app later.
         // Only Home's own share is dropped: a key service that saw the same DOWN keeps its hold.
@@ -1436,8 +1442,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (!onTile) hideGlass();
     };
 
-    private View wallpaperActions;
-    private TextView btnTrailer, btnMoreInfo, badgeTop10;
+    private View wallpaperActions, top10Sticker;
+    private ImageView top10Logo;
+    private TextView btnTrailer, btnMoreInfo, top10Rank;
     private BroadcastReceiver prevWallpaperReceiver;
 
     private void updateWallpaperActions() {
@@ -1450,15 +1457,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String yt = meta.optString("youtube_id", "");
         btnTrailer.setVisibility(yt.isEmpty() ? View.GONE : View.VISIBLE);
         btnMoreInfo.setVisibility(View.VISIBLE);
-        if (badgeTop10 != null) {
-            String top10 = meta.optString("top10", "").trim();
-            if (top10.isEmpty()) {
-                badgeTop10.setVisibility(View.GONE);
-            } else {
-                float dp = getResources().getDisplayMetrics().density;
-                WallpaperInfoDialog.applyTop10Style(badgeTop10, top10, dp);
-                badgeTop10.setVisibility(View.VISIBLE);
-            }
+        if (top10Sticker != null && top10Logo != null && top10Rank != null) {
+            float dp = getResources().getDisplayMetrics().density;
+            WallpaperInfoDialog.bindTop10Sticker(top10Sticker, top10Logo, top10Rank, meta, false, dp);
         }
         wallpaperActions.setVisibility(View.VISIBLE);
     }
