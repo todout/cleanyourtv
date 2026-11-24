@@ -23,10 +23,10 @@ import java.util.concurrent.Executors;
 
 final class WeatherHelper {
     private static final long REFRESH_MS = 30 * 60 * 1000L;
+    private static final double DEFAULT_LAT = -37.45859; // Coronel Suárez, Buenos Aires, Argentina (CP 7540)
+    private static final double DEFAULT_LON = -61.93294;
     private static final ExecutorService EXEC = Executors.newSingleThreadExecutor();
     private static long lastFetchMs = 0L;
-    private static double cachedLat = Double.NaN;
-    private static double cachedLon = Double.NaN;
 
     private static boolean hasData = false;
     private static int cachedCurTemp, cachedHumidity, cachedCurCode, cachedTodayMax, cachedTodayMin;
@@ -44,11 +44,8 @@ final class WeatherHelper {
         lastFetchMs = now;
         EXEC.execute(() -> {
             try {
-                if (Double.isNaN(cachedLat) || Double.isNaN(cachedLon)) {
-                    fetchLocation();
-                }
-                double lat = Double.isNaN(cachedLat) ? -34.6037 : cachedLat;
-                double lon = Double.isNaN(cachedLon) ? -58.3816 : cachedLon;
+                double lat = DEFAULT_LAT;
+                double lon = DEFAULT_LON;
                 String apiUrl = "https://api.open-meteo.com/v1/forecast?latitude=" + lat
                         + "&longitude=" + lon
                         + "&current=temperature_2m,relative_humidity_2m,weather_code"
@@ -133,17 +130,6 @@ final class WeatherHelper {
             ((TextView) activity.findViewById(tempIds[i])).setText(cachedFcTemps[i]);
         }
         widget.setVisibility(View.VISIBLE);
-    }
-
-    private static void fetchLocation() {
-        try {
-            JSONObject geo = new JSONObject(httpGet("https://ipwho.is/"));
-            if (geo.optBoolean("success", false)) {
-                cachedLat = geo.getDouble("latitude");
-                cachedLon = geo.getDouble("longitude");
-            }
-        } catch (Exception ignored) {
-        }
     }
 
     private static int iconForCode(int code) {
