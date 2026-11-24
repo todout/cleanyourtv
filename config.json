@@ -17,5 +17,6 @@
   "wallpaper_order": "sequential",
   "wallpaper_dim": 10,
   "wallpaper_true_color": true,
-  "stock_home_redirect": "com.google.android.apps.tv.launcherx"
+  "stock_home_redirect": "com.google.android.apps.tv.launcherx",
+  "home_long_press_home": true
 }
